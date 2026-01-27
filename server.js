@@ -29,7 +29,7 @@ db.connect((err) => {
 });
 
 // 2. API สมัครสมาชิก
-app.post('/login', (req, res) => {
+app.post('/api/login', (req, res) => {
     const { email, password } = req.body;
     
     // 1. เช็คว่ามีอีเมลนี้ไหม
