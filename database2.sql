@@ -17,8 +17,8 @@
 
 -- Dumping database structure for up_repair_system
 DROP DATABASE IF EXISTS `up_repair_system`;
-CREATE DATABASE IF NOT EXISTS `up_repair_system` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */;
-USE `up_repair_system`;
+-- CREATE DATABASE IF NOT EXISTS `up_repair_system` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */;
+-- USE `up_repair_system`;
 
 -- Dumping structure for table up_repair_system.requests
 DROP TABLE IF EXISTS `requests`;
