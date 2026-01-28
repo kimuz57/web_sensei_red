@@ -29,17 +29,22 @@ const upload = multer({ storage: storage });
 
 //ตั้งค่าอีเมล (Nodemailer)
 const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',  // ระบุ host ของ gmail ตรงๆ
-    port: 587,               // ใช้พอร์ต 587 (มาตรฐาน)
-    secure: false,           // false สำหรับพอร์ต 587
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // ใช้ false สำหรับ port 587
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
     },
+    // 👇 เพิ่มก้อนนี้เข้าไปครับ สำคัญมากบน Cloud
     tls: {
-        rejectUnauthorized: false // ช่วยแก้ปัญหา Certificate บน Cloud บางเจ้า
-    }
+        rejectUnauthorized: false,
+        ciphers: 'SSLv3'
+    },
+    // 👇 เพิ่ม Connection Timeout (ถ้าเกิน 10 วิ ให้ตัดเลยจะได้ไม่รอเก้อ)
+    connectionTimeout: 10000 
 });
+
 transporter.verify((error, success) => {
     if (error) {
         console.error("❌ เชื่อมต่อ Server อีเมลไม่สำเร็จ:", error);
