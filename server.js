@@ -65,24 +65,30 @@ db.connect((err) => {
 //สมัครสมาชิก
 app.post('/api/signup', (req, res) => {
     const { email, password, first_name, last_name } = req.body;
+    
     // 1. เช็คอีเมลซ้ำ
     db.query('SELECT email FROM users WHERE email = ?', [email], (err, results) => {
         if (err) return res.json({ status: 'error', message: err.message });
         if (results.length > 0) return res.json({ status: 'error', message: 'อีเมลนี้ถูกใช้งานแล้ว' });
+
         // 2. สร้าง Token
         const token = crypto.randomBytes(32).toString('hex');
-        // 3. บันทึก (is_verified = 0)
+
+        // 3. บันทึก
         const sql = 'INSERT INTO users (email, password, first_name, last_name, verification_token, is_verified) VALUES (?, ?, ?, ?, ?, 0)';
         
         db.query(sql, [email, password, first_name, last_name, token], (err, result) => {
             if (err) return res.json({ status: 'error', message: 'สมัครสมาชิกไม่สำเร็จ' });
 
-            // 4. ส่งอีเมล ตรงนี้ต้องแก้ URL ให้ตรงกับเครื่องคุณนะครับ
-            //ผมใช้เป็น IP Address ของเครื่องผม เพื่อให้มือถือในวงแลนเดียวกันกดลิงก์ได้
-            const verifyLink = `https://repair-up.onrender.com/verify?token=${token}`;
+            // 4. ส่งอีเมล
+            // ⚠️ จุดที่ต้องแก้: ถ้าเทสในเครื่องใช้ localhost, ถ้าขึ้น Server ใช้ URL ของ Render
+            // const BASE_URL = 'http://localhost:3000'; 
+            const BASE_URL = 'https://repair-up.onrender.com'; // ใช้บน Server จริง
+            const verifyLink = `${BASE_URL}/verify?token=${token}`;
 
             const mailOptions = {
-                from: 'ระบบแจ้งซ่อม <process.env.EMAIL_USER>',
+                // 🛠️ แก้ตรงนี้: ใช้ชื่อ Gmail ของเราเป็นผู้ส่ง
+                from: `ระบบแจ้งซ่อม <${process.env.EMAIL_USER}>`, 
                 to: email,
                 subject: '📧 ยืนยันการสมัครสมาชิก',
                 html: `
@@ -92,8 +98,13 @@ app.post('/api/signup', (req, res) => {
                 `
             };
 
-            transporter.sendMail(mailOptions, (error) => {
-                if (error) console.log('ส่งเมลไม่ผ่าน:', error);
+            transporter.sendMail(mailOptions, (error, info) => {
+                if (error) {
+                    console.log('❌ ส่งเมลไม่ผ่าน:', error); 
+                    // แจ้ง User ว่าสมัครได้แต่ส่งเมลไม่ได้ (อาจจะให้กดส่งใหม่ทีหลัง)
+                    return res.json({ status: 'ok', message: 'สมัครสำเร็จ แต่ส่งอีเมลล้มเหลว (กรุณาติดต่อแอดมินหรือลองใหม่)' });
+                }
+                console.log('✅ ส่งเมลสำเร็จ:', info.response);
                 res.json({ status: 'ok', message: 'สมัครสำเร็จ! กรุณาเช็คอีเมลเพื่อยืนยันตัวตน' });
             });
         });
