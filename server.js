@@ -165,7 +165,7 @@ app.put('/api/requests/:id/status', (req, res) => {
                     
                     // แก้เลข IP ตรงนี้ให้เป็นของเครื่องตัวเองนะครับเพื่อให้กดจากมือถือได้ที่อยู่ในแลนวงเดียวกัน (ถ้าเทสแค่ในคอมก็ใช้ localhost ก็ได้)
                     // เช่น http://192.168.1.180:3000 หรือถ้าเทสแค่ในคอมใช้ http://localhost:3000 ก็ได้
-                    const webLink = `http://192.168.1.180:3000`; // ใช้บน Server จริง
+                    const webLink = `https://repair-up.onrender.com`; // ใช้บน Server จริง
 
                     // ส่งอีเมล
                     transporter.sendMail({
