@@ -50,10 +50,17 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 //ตั้งค่าอีเมล (Nodemailer)
+ Updated upstream
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',  // 👈 ต้องเป็นอันนี้
     port: 587,                     // 👈 ต้องเป็น 587
     secure: false,              // true สำหรับ 465, false สำหรับอื่นๆ
+
+/*const transporter = nodemailer.createTransport({
+    host: 'smtp-relay.brevo.com',  // 👈 ต้องเป็นอันนี้
+    port: 465,                     // 👈 ต้องเป็น 587
+    secure: true,              // true สำหรับ 465, false สำหรับอื่นๆ
+>>>>>>> Stashed changes
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
@@ -61,22 +68,22 @@ const transporter = nodemailer.createTransport({
     tls: {
         rejectUnauthorized: false 
     }
-});
+});*/
 
-transporter.verify((error, success) => {
+/*transporter.verify((error, success) => {
     if (error) {
         console.error("เชื่อมต่อ Server อีเมลไม่สำเร็จ:", error);
     } else {
         console.log("Server อีเมลพร้อมใช้งานแล้ว!");
     }
-});
+});*/
 
 //เชื่อมต่อ Database
 const db = mysql.createConnection({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'up_repair_system' //เช็คชื่อ DB ให้ถูก
+    database: process.env.DB_NAME || //'up_repair_system_v2' //เช็คชื่อ DB ให้ถูก
 });
 app.use(express.static(__dirname));
 db.connect((err) => {
