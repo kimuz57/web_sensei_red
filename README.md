@@ -6,7 +6,7 @@
 -node server.js<br>
 login เพื่อใช้งานเว็บโดยใช้ email test<br>
 <h2>Email test</h2>
-test@up.ac.th<br>
-CPE1234<br><br>
+admin@up.ac.th<br>
+1234<br><br>
 
-ดูเว็บได้ที่----> https://repair-up.onrender.com
+หรือดูเว็บได้ที่----> https://repair-up.onrender.com<br>
