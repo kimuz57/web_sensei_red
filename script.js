@@ -1,43 +1,30 @@
-//แก้ IP ตรงนี้ให้ตรงกับเครื่องคุณ (ipconfig)
+// ⚠️ แก้ IP ตรงนี้ให้ตรงกับเครื่องคุณ (ipconfig)
+const BASE_URL = 'http://localhost:3000';
 // const BASE_URL = 'http://192.168.1.180:3000'; 
-const BASE_URL = "https://repair-up.onrender.com"; // ใช้บน Server จริง
-const saltRounds = 10; // ความละเอียดในการเข้ารหัส
+// const BASE_URL = "https://repair-up.onrender.com"; // ใช้บน Server จริง
+const saltRounds = 10; 
+
 // เช็คสถานะ Login เพื่อปรับ Navbar
 function checkLoginStatus() {
     try {
-        console.log("กำลังเช็คสถานะล็อกอิน...");
         const userStr = localStorage.getItem('user');
-        console.log("ข้อมูลในเครื่อง:", userStr);
-
         let user = null;
         if (userStr) {
             user = JSON.parse(userStr);
         }
 
-        // ดึง Element มาให้ครบ (เพิ่ม navProfile และ userNameDisplay)
         const navLogin = document.getElementById('nav-login');
         const navLogout = document.getElementById('nav-logout');
         const navProfile = document.getElementById('nav-profile');
         const userNameDisplay = document.getElementById('user-name-display');
+        
         if (user) {
-            console.log("ยืนยัน: ล็อกอินอยู่แล้ว (User: " + user.first_name + ")");
-            
-            // ซ่อนปุ่มเข้าสู่ระบบ
             if(navLogin) navLogin.style.display = 'none';
-            //โชว์ปุ่ม User
             if(navLogout) navLogout.style.display = 'block';
             if(navProfile) navProfile.style.display = 'block'; 
-            
-            //ใส่ชื่อ User
             if(userNameDisplay) userNameDisplay.innerText = user.first_name;
-
         } else {
-            console.log("ยังไม่ล็อกอิน");
-            
-            // โชว์ปุ่มเข้าสู่ระบบ
             if(navLogin) navLogin.style.display = 'block';
-            
-            // ซ่อนปุ่ม User
             if(navLogout) navLogout.style.display = 'none';
             if(navProfile) navProfile.style.display = 'none';
         }
@@ -45,59 +32,48 @@ function checkLoginStatus() {
         console.error("เกิดข้อผิดพลาดใน checkLoginStatus:", error);
     }
 }
+
 function logout() {
-    fetch('/api/logout')
+    fetch(`${BASE_URL}/api/logout`)
     .then(res => res.json())
     .then(data => {
         if (data.status === 'ok') {
-            //ลบข้อมูลที่ค้างในเครื่อง ถ้าไม่ลบ มันจะจำว่า Login อยู่
             localStorage.removeItem('user'); 
-            //สั่งย้ายไปหน้าหน้าแรก
             window.location.href = 'index.html'; 
         }
     })
     .catch(err => console.error(err));
 }
+
 // ฟังก์ชันสำหรับปุ่มในหน้าแรก (Services)
 function handleServiceClick(destination) {
-    //เช็คว่าล็อกอินหรือยัง?
     const user = localStorage.getItem('user');
-
     if (!user) {
-        //ถ้ายังไม่ล็อกอิน
         alert('กรุณาเข้าสู่ระบบก่อนใช้งาน');
-        window.location.href = 'login.html'; //ไปหน้า Login
+        window.location.href = 'login.html'; 
     } else {
-        //ถ้าล็อกอินแล้ว
         if (destination.startsWith('#')) {
-            // กรณีเป็น Link ภายในหน้า เลื่อนลงไป Footer
             const element = document.querySelector(destination);
             if(element) element.scrollIntoView({ behavior: 'smooth' });
         } else {
-            // กรณีเป็น Link ไปหน้าอื่น
             window.location.href = destination;
         }
     }
 }
 
-// เมนูมือถือ
 function toggleMenu() {
     const navMenu = document.getElementById('nav-menu');
     if(navMenu) navMenu.classList.toggle('active');
 }
 
 // ระบบสมาชิก (Authentication)
-//Login
 function handleLogin(event) {
     event.preventDefault();
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
-    // ดึงตัวจัดการข้อความสีแดง
     const emailError = document.getElementById('email-error');
-    const resendContainer = document.getElementById('resend-container');
-    // รีเซ็ต Error เดิม
+    
     if(emailError) { emailError.style.display = 'none'; emailError.innerText = ''; }
-    if(resendContainer) resendContainer.innerHTML = ''; 
 
     fetch(`${BASE_URL}/api/login`, {
         method: 'POST',
@@ -107,12 +83,9 @@ function handleLogin(event) {
     .then(response => response.json())
     .then(data => {
         if (data.status === 'ok') {
-            //ล็อกอินสำเร็จ
             localStorage.setItem('user', JSON.stringify(data.user));
-            //ย้ายไปหน้า Dashboard.html
             window.location.href = 'dashboard.html'; 
         } else {
-            //กรณี Error
             if(emailError) {
                 emailError.innerText = data.message;
                 emailError.style.display = 'block';
@@ -128,26 +101,27 @@ function handleLogin(event) {
 }
 
 // ระบบแจ้งซ่อม (Dashboard & Requests)
-// 1. ส่งเรื่องแจ้งซ่อม
 function handleSubmitRequest(e) {
     e.preventDefault();
     const userStr = localStorage.getItem('user');
     if (!userStr) {
         alert("กรุณาเข้าสู่ระบบก่อนแจ้งซ่อม!");
-        window.location.href = 'login.html'; //ไปหน้า Login
+        window.location.href = 'login.html';
         return;
     }
     const user = JSON.parse(userStr);
 
     const problemTitle = document.getElementById('request-title').value;
-    const building = document.getElementById('request-building').value;
+    const buildingId = document.getElementById('request-building').value; 
+    const phone = document.getElementById('request-phone').value;
     const detail = document.getElementById('request-detail').value;
     const fileInput = document.getElementById('request-image');
 
     const formData = new FormData();
     formData.append('user_id', user.id);
     formData.append('problem_title', problemTitle);
-    formData.append('building', building);
+    formData.append('building_id', buildingId); 
+    formData.append('contact', phone);
     formData.append('detail', detail);
 
     if (fileInput.files.length > 0) {
@@ -161,9 +135,13 @@ function handleSubmitRequest(e) {
     .then(response => response.json())
     .then(data => {
         if (data.status === 'ok') {
-            document.getElementById('success-modal').style.display = 'flex';
+            alert("แจ้งซ่อมสำเร็จเรียบร้อย!"); 
             e.target.reset(); 
-            resetUploadBox();
+            if(typeof resetUploadBox === 'function') resetUploadBox(); 
+            
+            if (window.location.pathname.includes('dashboard.html')) {
+                renderRequests('all');
+            }
         } else {
             alert("บันทึกไม่สำเร็จ: " + data.message);
         }
@@ -177,20 +155,19 @@ function handleSubmitRequest(e) {
 // 2. ดึงรายการมาโชว์ (Dashboard)
 function renderRequests(filterStatus) {
     const listContainer = document.getElementById('requestList');
-    if (!listContainer) return; // ถ้าไม่ใช่หน้า Dashboard ให้หยุดทำงาน
+    if (!listContainer) return; 
 
     listContainer.innerHTML = '<p style="text-align:center;">กำลังโหลดข้อมูล...</p>';
     
-    // ดึง User ปัจจุบัน
     const userStr = localStorage.getItem('user');
     const currentUser = userStr ? JSON.parse(userStr) : null;
 
     fetch(`${BASE_URL}/api/requests`)
     .then(response => response.json())
     .then(data => {
-        let filteredData;
+        console.log("ข้อมูลดิบจาก Server:", data); // เช็คข้อมูลที่นี่
 
-        //Logic กรองข้อมูล
+        let filteredData;
         if (filterStatus === 'mine') {
             if (!currentUser) {
                 listContainer.innerHTML = '<p style="text-align:center;">กรุณาเข้าสู่ระบบ</p>';
@@ -200,7 +177,8 @@ function renderRequests(filterStatus) {
         } else if (filterStatus === 'all') {
             filteredData = data;
         } else {
-            filteredData = data.filter(item => item.status === filterStatus);
+            // กรองโดยใช้ status_name (เพราะ Server ส่งมาแบบนี้)
+            filteredData = data.filter(item => item.status_name === filterStatus);
         }
 
         listContainer.innerHTML = '';
@@ -216,27 +194,49 @@ function renderRequests(filterStatus) {
         }
 
         filteredData.forEach(item => {
-            let statusObj = getStatusInfo(item.status);
-            const dateStr = new Date(item.created_at).toLocaleDateString('th-TH', {
-                year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            let statusObj = getStatusInfo(item.status_name); 
+            const dateStr = new Date(item.created_at).toLocaleDateString('th-TH', { 
+                year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
             });
             const reporterName = item.first_name ? `${item.first_name} ${item.last_name}` : 'ไม่ระบุ';
 
-            // รูปภาพ
             const imageSrc = item.image_path 
                 ? `${BASE_URL}/uploads/${item.image_path}`
-                : "https://placehold.co/150x150/png?text=Repair";
+                : "https://placehold.co/150x150/png?text=Repair"; // ใช้รูป Placeholder แทนถ้าไม่มีรูป
 
-            // จัดการรีวิว
+            // --- ส่วนแอดมิน (Dropdown) ---
+            let adminControls = '';
+            if (currentUser && currentUser.role === 'admin') {
+                adminControls = `
+                    <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #eee;">
+                        <small style="color:#666; display:block; margin-bottom:5px;">แอดมิน: เปลี่ยนสถานะ</small>
+                        <select onchange="updateStatus(${item.id}, this.value)" style="width:100%; padding: 5px; border-radius: 4px; border: 1px solid #ddd; cursor: pointer;">
+                            <option value="received" ${item.status_name === 'received' ? 'selected' : ''}>รับเรื่องแล้ว</option>
+                            <option value="progress" ${item.status_name === 'progress' ? 'selected' : ''}>กำลังดำเนินการ</option>
+                            <option value="completed" ${item.status_name === 'completed' ? 'selected' : ''}>เสร็จสิ้น</option>
+                        </select>
+                    </div>
+                `;
+            }
+
+            // --- ส่วนแสดงดาวรีวิว (แก้ตรงนี้ให้สมบูรณ์) ---
             let reviewHTML = '';
-            if (item.status === 'completed') {
-                if (item.rating) {
+            if (item.status_name === 'completed') {
+                // ✅ เช็คว่ามีคะแนนไหม (rating ไม่เป็น null)
+                if (item.rating !== null && item.rating !== undefined) { 
+                    // ถ้ามีคะแนนแล้ว -> โชว์ดาว
                     let stars = '';
                     for(let i=1; i<=5; i++) {
                         stars += `<i class="fas fa-star" style="color: ${i <= item.rating ? '#ffca28' : '#ddd'}; font-size: 0.9rem;"></i>`;
                     }
-                    reviewHTML = `<div class="review-badge"><div>${stars}</div><small style="color:#666;">"${item.review_comment || '-'}"</small></div>`;
+                    reviewHTML = `
+                        <div style="margin-top:10px; padding:8px; background:#f9f9f9; border-radius:5px;">
+                            <div style="margin-bottom:4px;">${stars}</div>
+                            <small style="color:#666;">"${item.review_comment || '-'}"</small>
+                        </div>
+                    `;
                 } else {
+                    // ถ้ายังไม่มีคะแนน และเป็นคนแจ้ง -> โชว์ปุ่มรีวิว
                     if (currentUser && currentUser.id === item.user_id) {
                         reviewHTML = `
                             <button onclick="openReviewModal(${item.id})" class="btn-outline" style="width:100%; margin-top:10px; font-size:0.9rem;">
@@ -247,35 +247,26 @@ function renderRequests(filterStatus) {
                 }
             }
 
-            // Admin Controls
-            let adminControls = '';
-            if (currentUser && currentUser.role === 'admin') {
-                adminControls = `
-                    <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #eee;">
-                        <small style="color:#666;">แอดมิน: เปลี่ยนสถานะ</small>
-                        <select onchange="updateStatus(${item.id}, this.value)" style="width:100%; padding: 5px; margin-top:5px; border-radius: 4px; border: 1px solid #ddd; cursor: pointer;">
-                            <option value="received" ${item.status === 'received' ? 'selected' : ''}>รับเรื่องแล้ว</option>
-                            <option value="progress" ${item.status === 'progress' ? 'selected' : ''}>กำลังดำเนินการ</option>
-                            <option value="completed" ${item.status === 'completed' ? 'selected' : ''}>เสร็จสิ้น</option>
-                        </select>
-                    </div>
-                `;
-            }
-
             const card = document.createElement('div');
             card.className = 'request-card';
+            // ✅ ใช้ building_name ที่ได้จาก Server
             card.innerHTML = `
                 <img src="${imageSrc}" class="card-img" alt="รูปประกอบ" onclick="window.open(this.src)" style="cursor: pointer;">
                 <div class="card-content">
                     <div class="card-info">
-                        <h4>${item.building} <small style="color:#666; font-size:0.8rem;">(${reporterName})</small></h4>
+                        <h4>${item.building_name || 'ไม่ระบุอาคาร'} <small style="color:#666; font-size:0.8rem;">(${reporterName})</small></h4>
                         <div class="card-date"><i class="far fa-clock"></i> ${dateStr}</div>
                         <p style="font-weight:bold;">${item.problem_title}</p>
-                        <p style="font-size:0.9rem; color:#666;">${item.detail || '-'}</p>
+                        <p class="detail-text">${item.detail || '-'}</p>
                     </div>
-                    <div style="margin-top:10px;">
-                        <span class="status-badge ${statusObj.class}">${statusObj.text}</span>
-                        ${adminControls} ${reviewHTML}
+                    
+                    <div class="card-actions" style="margin-top: auto;">
+                        <div style="margin-bottom: 10px;">
+                            <span class="status-badge ${statusObj.class}">${statusObj.text}</span>
+                        </div>
+                        
+                        ${adminControls}
+                        ${reviewHTML}
                     </div>
                 </div>
             `;
@@ -293,7 +284,7 @@ function getStatusInfo(status) {
         case 'received': return { text: 'รับเรื่องแล้ว', class: 'status-received' };
         case 'progress': return { text: 'กำลังดำเนินการ', class: 'status-progress' };
         case 'completed': return { text: 'เสร็จสิ้น', class: 'status-completed' };
-        default: return { text: status, class: '' };
+        default: return { text: status || 'รอดำเนินการ', class: '' };
     }
 }
 
@@ -303,7 +294,6 @@ function filterStatus(status) {
     renderRequests(status);
 }
 
-//อัปเดตสถานะสำหรับ Admin
 function updateStatus(requestId, newStatus) {
     let statusText = '';
     if(newStatus === 'received') statusText = 'รับเรื่องแล้ว';
@@ -331,7 +321,7 @@ function updateStatus(requestId, newStatus) {
     .catch(err => console.error(err));
 }
 
-// ระบบรีวิว & Modal & สไลด์โชว์
+// ระบบรีวิว & Modal
 let currentRating = 0;
 
 function openReviewModal(requestId) {
@@ -360,28 +350,34 @@ function updateStarUI(rating) {
 }
 
 function submitReview() {
+    const requestId = document.getElementById('review-request-id').value;
+    const comment = document.getElementById('review-comment').value;
+    
     if (currentRating === 0) {
         alert('กรุณากดเลือกดาวอย่างน้อย 1 ดวง');
         return;
     }
-    const requestId = document.getElementById('review-request-id').value;
-    const comment = document.getElementById('review-comment').value;
 
     fetch(`${BASE_URL}/api/review`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ request_id: requestId, rating: currentRating, review_comment: comment })
+        body: JSON.stringify({ 
+            request_id: requestId, 
+            rating: currentRating, 
+            review_comment: comment 
+        })
     })
     .then(res => res.json())
     .then(data => {
         if (data.status === 'ok') {
-            alert('ขอบคุณสำหรับการรีวิว!');
-            closeReviewModal();
-            renderRequests('completed');
+            alert('บันทึกรีวิวเรียบร้อย ขอบคุณครับ!');
+            closeReviewModal(); 
+            renderRequests('all'); 
         } else {
-            alert('เกิดข้อผิดพลาด');
+            alert('เกิดข้อผิดพลาด: ' + data.message);
         }
-    });
+    })
+    .catch(err => console.error('Error:', err));
 }
 
 function closeModal() {
@@ -394,39 +390,15 @@ function closeSignupModal() {
     window.location.href = 'login.html';
 }
 
-function toggleMenu() {
-    const navMenu = document.getElementById('nav-menu');
-    if(navMenu) navMenu.classList.toggle('active');
-}
-
-// เริ่มต้นทำงาน (Main Execution)
+// Main Execution
 document.addEventListener('DOMContentLoaded', () => {
-    //เช็ค Login
     checkLoginStatus();
-    //เช็คว่าอยู่หน้าไหน แล้วรันโค้ดของหน้านั้น
     const path = window.location.pathname;
-    //หน้า Dashboard
-    // หน้า Dashboard
+
     if (path.includes('dashboard.html')) {
-        // 1. ดึงข้อมูลมาเช็คก่อน
-        const userStr = localStorage.getItem('user');
-        let modeText = "Guest Mode"; // ค่าเริ่มต้น: สมมติว่าเป็นคนนอก
-        if (userStr) {
-            const user = JSON.parse(userStr);
-            // 2. เช็ค Role: ถ้าเป็น admin ให้ขึ้น Admin ถ้าไม่ใช่ให้ขึ้น User
-            if (user.role === 'admin') {
-                modeText = "Admin Mode";
-            } else {
-                modeText = "User Mode";
-            }
-        }
-        // 3. แสดงผลแค่อย่างเดียว ตามสถานะจริง
-        console.log(`เข้าหน้า Dashboard (${modeText})`);
-        // 4. โหลดข้อมูล
         renderRequests('all'); 
     }
 
-    //หน้าแจ้งซ่อม (Add Request)
     if (path.includes('add_request.html')) {
         if(!localStorage.getItem('user')) {
             alert('กรุณาเข้าสู่ระบบ');
@@ -434,15 +406,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // หน้าแรก (Home)
-    // เช็คหลายแบบเผื่อกรณีเปิด root (/) หรือ index.html
     if (path.includes('index.html') || path === '/' || path.endsWith('/')) {
         startSlideshow(); 
     }
 
-    // ตั้งค่า Image Preview รันทุกหน้าที่มี input นี้
     setupImagePreview();
 });
+
+// Slideshow & Image Preview functions... (เก็บไว้เหมือนเดิมตามที่คุณมี)
+// ... (ส่วนล่างนี้ไม่ต้องแก้ครับ ใช้ของเดิมได้เลย) ...
 
 
 // สไลด์โชว์แบบ Infinite Loop พื้นหลัง home page
