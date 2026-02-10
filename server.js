@@ -1,6 +1,6 @@
 require('dotenv').config();
-// const BASE_URL = "https://repair-up.onrender.com"; // เปลี่ยนเป็น URL จริงเมื่อขึ้น Server
-const BASE_URL = "http://localhost:3000"; // สำหรับทดสอบบนเครื่องตัวเอง
+const BASE_URL = "https://repair-up.onrender.com"; // เปลี่ยนเป็น URL จริงเมื่อขึ้น Server
+// const BASE_URL = "http://localhost:3000"; // สำหรับทดสอบบนเครื่องตัวเอง
 // 1. IMPORT & SETUP
 const express = require('express');
 const mysql = require('mysql2');

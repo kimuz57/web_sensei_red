@@ -1,7 +1,7 @@
 // ⚠️ แก้ IP ตรงนี้ให้ตรงกับเครื่องคุณ (ipconfig)
-const BASE_URL = 'http://localhost:3000';
+// const BASE_URL = 'http://localhost:3000';
 // const BASE_URL = 'http://192.168.1.180:3000'; 
-// const BASE_URL = "https://repair-up.onrender.com"; // ใช้บน Server จริง
+const BASE_URL = "https://repair-up.onrender.com"; // ใช้บน Server จริง
 const saltRounds = 10; 
 
 // เช็คสถานะ Login เพื่อปรับ Navbar
