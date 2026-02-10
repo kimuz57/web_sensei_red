@@ -55,7 +55,7 @@ const db = mysql.createConnection({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
-    database: 'up_repair_system_v2' // 👈 เปลี่ยนชื่อ DB ตรงนี้
+    database: process.env.DB_NAME || 'up_repair_system_v2'
 });
 
 db.connect((err) => {
