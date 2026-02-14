@@ -51,16 +51,24 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // เชื่อมต่อ Database (อัปเดตชื่อ DB ตาม SQL ใหม่)
-const db = mysql.createConnection({
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'up_repair_system_v2'
+const db = mysql.createPool({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
 });
 
-db.connect((err) => {
-    if (err) console.error('เชื่อมต่อ Database ไม่สำเร็จ:', err);
-    else console.log('เชื่อมต่อ MySQL (up_repair_system_v2) สำเร็จแล้ว');
+// เช็คว่าเชื่อมต่อได้ไหม (ไม่ใส่ก็ได้ แต่ใส่ไว้ดูให้อุ่นใจ)
+db.getConnection((err, connection) => {
+    if (err) {
+        console.error('❌ เชื่อมต่อ Database ไม่สำเร็จ:', err.message);
+    } else {
+        console.log('✅ เชื่อมต่อ MySQL (Pool) สำเร็จแล้ว');
+        connection.release(); // คืน Connection กลับเข้า Pool
+    }
 });
 
 // 3. API ROUTES
